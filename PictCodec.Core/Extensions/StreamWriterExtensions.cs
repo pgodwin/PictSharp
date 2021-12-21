@@ -1,16 +1,12 @@
 ﻿using Be.IO;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace PictCodec
+
+namespace PictCodec.Extensions
 {
     public static class StreamExtensions
     {
-        
+
 
         public static void WriteShort(this BeBinaryWriter writer, object value)
         {
@@ -33,5 +29,5 @@ namespace PictCodec
         }
     }
 
-   
+
 }

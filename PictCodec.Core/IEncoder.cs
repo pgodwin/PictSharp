@@ -10,6 +10,6 @@ namespace PictCodec
 {
     public interface IEncoder
     {
-        void Encode(Stream outStream, Bitmap bitmap);
+        void Encode(Stream output, ImageDetails image);
     }
 }

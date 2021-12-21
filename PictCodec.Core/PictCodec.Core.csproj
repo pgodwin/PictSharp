@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>PictCodec</RootNamespace>
+  </PropertyGroup>
+
+  
+  <ItemGroup>
+    <PackageReference Include="Be.IO-multi" Version="1.0.0" />
+  </ItemGroup>
+
+</Project>
