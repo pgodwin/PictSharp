@@ -6,7 +6,6 @@ using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.Memory;
 using SixLabors.ImageSharp.PixelFormats;
 
-
 namespace PictCodec.ImageSharp
 {
     public static class ImageExtensions

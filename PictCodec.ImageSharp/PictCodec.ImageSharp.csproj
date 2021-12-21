@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PictCodec\PictCodec.Core.csproj" />
+    <ProjectReference Include="..\PictCodec.Core\PictCodec.Core.csproj" />
   </ItemGroup>
 
 </Project>

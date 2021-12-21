@@ -5,11 +5,11 @@ VisualStudioVersion = 17.0.31919.166
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{CB762AAD-FB52-4FBA-A983-91181F110ED8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PictCodec.Core", "PictCodec\PictCodec.Core.csproj", "{429B42DE-0CA2-408D-87CF-BA703FD4EE45}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PictCodec.Core", "PictCodec.Core\PictCodec.Core.csproj", "{429B42DE-0CA2-408D-87CF-BA703FD4EE45}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PictCodec.ImageSharp", "PictCodec.ImageSharp\PictCodec.ImageSharp.csproj", "{CAFD139A-075C-495D-84F4-EE225D4D1210}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PictCodec.ImageSharp", "PictCodec.ImageSharp\PictCodec.ImageSharp.csproj", "{CAFD139A-075C-495D-84F4-EE225D4D1210}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PictCodec.Drawing", "PictCode.Drawing\PictCodec.Drawing.csproj", "{38C72A15-E0A7-420C-B4D2-C67E1A63CEBA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PictCodec.Drawing", "PictCodec.Drawing\PictCodec.Drawing.csproj", "{38C72A15-E0A7-420C-B4D2-C67E1A63CEBA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

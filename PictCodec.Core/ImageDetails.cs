@@ -1,8 +1,4 @@
 ﻿using System;
-using System.IO;
-
-
-
 
 namespace PictCodec
 {
@@ -26,6 +22,10 @@ namespace PictCodec
             this.Bottom = height;
             this.Left = 0;
             this.Right = width;
+
+            this.Width = width;
+            this.Height = height;
+
             this.BitsPerPixel = bitsPerPixel;
             this.Channels = channels;
             this.IsIndexed = false;
@@ -43,10 +43,15 @@ namespace PictCodec
             this.Bottom = height;
             this.Left = 0;
             this.Right = width;
+            this.Width = width;
+            this.Height = height;
             this.BitsPerPixel = bitsPerPixel;
             this.Channels = 1; 
             this.Palette = palette;
             this.IsIndexed = true;
+
+            
+
             this.HorizontalResolution = horizontalRes;
             this.VerticalResolution = verticalRes;
 
@@ -66,13 +71,15 @@ namespace PictCodec
         public int Bottom { get;  }
 
         public int Right { get; }
+        public int Width { get; }
+        public int Height { get; }
         public double VerticalResolution { get; }
         public double HorizontalResolution { get; }
 
         public PaletteEntry[] Palette { get; }
 
         /// <summary>
-        /// A method to return Scanlines
+        /// A method to return Scanlines of an image
         /// </summary>
         public Func<int, byte[]> GetScanline { get; }
     }

@@ -49,7 +49,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PictCodec\PictCodec.Core.csproj">
+    <ProjectReference Include="..\PictCodec.Core\PictCodec.Core.csproj">
       <Project>{429b42de-0ca2-408d-87cf-ba703fd4ee45}</Project>
       <Name>PictCodec.Core</Name>
     </ProjectReference>
