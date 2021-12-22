@@ -1,9 +1,9 @@
 ﻿using Be.IO;
 using PictCodec.Extensions;
-using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
-
+using System.Threading;
 
 namespace PictCodec
 {
@@ -39,31 +39,37 @@ namespace PictCodec
      * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
      * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
      */
+    /// <summary>
+    /// Implements a Pict Image Encoder
+    /// </summary>
+    /// <remarks>
+    /// Resources: 
+    ///  Inside Macintosh QuickDraw: https://web.archive.org/web/20010413132143/http://developer.apple.com/techpubs/mac/QuickDraw/QuickDraw-2.html
+    ///  QuickDraw TechNotes: https://web.archive.org/web/20010414045329/http://developer.apple.com/technotes/indexes/qd-a.html
+    /// </remarks>
     public class Pict : PictBase, IEncoder
     {
-        private int rowBytes;
 
-        private ushort ScaleQuantumToShort(byte quantum)
-        {
-            if (quantum <= 0.0)
-                return (0);
-            if ((257.0 * quantum) >= 65535.0)
-                return (65535);
-            return ((ushort) (257.0 * quantum + 0.5));
 
-        }
-
-        public void Encode(Stream output, ImageDetails image)
+       
+        public void Encode(Stream output, ImageDetails image) => this.Encode(output, image, CancellationToken.None);
+        public void Encode(Stream output, ImageDetails image, CancellationToken cancellationToken)
         {
             using (var stream = new BeBinaryWriter(output, Encoding.Default, true))
             {
-                var h = image.Bottom;
+                var h = image.Height;
                 int size = 0;
 
                 this.WriteHeader(stream, image);
                
                 for (int y = 0; y < h; y++)
                 {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        stream.Flush();
+                        break;
+                    }
+                        
                     var row = image.GetScanline(y);
                     size += this.WritePixelScanLine(stream, image, row);
                 }
@@ -73,7 +79,21 @@ namespace PictCodec
             }
 
         }
-         
+
+        private int rowBytes;
+        private int packedBytes;
+
+        private ushort ScaleQuantumToShort(byte quantum)
+        {
+            if (quantum <= 0.0)
+                return (0);
+            if ((257.0 * quantum) >= 65535.0)
+                return (65535);
+            return ((ushort)(257.0 * quantum + 0.5));
+
+        }
+
+
 
         internal void WriteHeader(BeBinaryWriter imageOutput, ImageDetails imageDetails)
         {
@@ -81,7 +101,36 @@ namespace PictCodec
             var pictComponents = (imageDetails.IsIndexed ? 1 : 4);
             // If a source image is 24 bit, return 32 bit
             // Otherwise 1, 4, 8, 16 and 32 bit images supported.
-            var pictBps = imageDetails.BitsPerPixel == 24 ? 32 : imageDetails.BitsPerPixel; 
+            var pictBps = imageDetails.BitsPerPixel == 24 ? 32 : imageDetails.BitsPerPixel;
+
+
+            if (imageDetails.BitsPerPixel == 1)
+            {
+                packedBytes = (imageDetails.Width / 8 + ((imageDetails.Width % 8) != 0 ? 1 : 0));
+                rowBytes = imageDetails.Width * 1;
+            }
+            else if (imageDetails.IsIndexed)
+            {
+                packedBytes = (int)(((imageDetails.Width * 8) / imageDetails.BitsPerPixel) +
+                                (((imageDetails.Width * 8) % imageDetails.Width) != 0 ? 1 : 0));
+                rowBytes = imageDetails.Width * 1;
+            }
+            else if (imageDetails.BitsPerPixel == 16)
+            {
+                packedBytes = imageDetails.Width * 2;
+                rowBytes = imageDetails.Width * 2;
+            }
+            else if (imageDetails.BitsPerPixel == 24)
+            {
+                packedBytes = imageDetails.Width * 4;
+                rowBytes = imageDetails.Width * 4;
+            }
+            else if (imageDetails.BitsPerPixel == 32)
+            {
+                packedBytes = imageDetails.Width * pictComponents;
+                rowBytes = imageDetails.Width * pictComponents;
+            }
+                
 
             // TODO: Make 512 byte header optional
             // Write empty 512-byte header
@@ -104,14 +153,19 @@ namespace PictCodec
             // Version 2 HEADER_OP, extended version.
             imageOutput.WriteShort(Pict.OP_HEADER_OP);
             imageOutput.WriteInt(Pict.HEADER_V2_EXT); // incl 2 bytes reseverd
+            //imageOutput.WriteShort(FFEE); // FFEF or FFEE
+            //imageOutput.WriteShort(0x0); // Reservered 
 
-            // Image resolution, 72 dpi
-            imageOutput.WriteShort((ushort)Math.Ceiling(imageDetails.VerticalResolution));
+            // Original Horizontal Resolution in Pixels / Inch
+            // Image resolution, 72 dpi (long)
+            imageOutput.WriteShort(72);
             imageOutput.WriteShort(0);
-            imageOutput.WriteShort((ushort)Math.Ceiling(imageDetails.HorizontalResolution));
+            // Original Verticale Resolution in Pixels / Inch
+            imageOutput.WriteShort(72);
             imageOutput.WriteShort(0);
 
             // Optimal source rectangle (same as image bounds)
+            // Frame at original resolution
             imageOutput.WriteShort(imageDetails.Top);
             imageOutput.WriteShort(imageDetails.Left);
             imageOutput.WriteShort(imageDetails.Bottom);
@@ -120,45 +174,64 @@ namespace PictCodec
             // Reserved (4 bytes)
             imageOutput.WriteInt(0);
 
+            // ------------------ END OF HEADER -------------------- //
 
-            // TODO: The header really ends here...
+            // This is where things get weird...depending on bpp
 
-            // Highlight
-            //imageOutput.WriteShort(Pict.OP_DEF_HILITE);
+            // I've seen all sorts of weird things
+            PackType packType;
+            if (imageDetails.BitsPerPixel == 32)
+                packType = PackType.PackBitsRgb;
+            else if (imageDetails.BitsPerPixel == 24)
+                packType = PackType.StripAlpha;
+            else if (imageDetails.BitsPerPixel == 16)
+                packType = PackType.PackBitsPixel;
+            else
+                packType = PackType.PackBits;
+
+            if (rowBytes < 8)
+                packType = PackType.NotPacked;
+
+
+
+
 
             // Set the clip rectangle
             imageOutput.WriteShort(Pict.OP_CLIP_RGN);
             imageOutput.WriteShort(10);
-            imageOutput.WriteUShort(imageDetails.Top); // top
-            imageOutput.WriteUShort(imageDetails.Left); // left
+            imageOutput.WriteShort(imageDetails.Top); // top
+            imageOutput.WriteShort(imageDetails.Left); // left
             imageOutput.WriteShort(imageDetails.Bottom);
             imageOutput.WriteShort(imageDetails.Right);
 
             if (imageDetails.IsIndexed)
             {
-                imageOutput.WriteShort(0x98); // PictPICTOp
-                
+                if (imageDetails.BitsPerPixel == 1)
+                {
+                    imageOutput.WriteShort(Pict.OP_BITS_RECT);
+                    imageOutput.WriteShort(rowBytes);
+
+                    // Need to write the bitmap
+                }
+                else
+                {
+                    imageOutput.WriteShort(Pict.OP_PACK_BITS_RECT); // Packbits
+                    // The offset in bytes from one row of the image to the next. The value must be even, less than $4000, and for best performance it should be a multiple of 4. 
+                    // The high 2 bits of rowBytes are used as flags. If bit 15 = 1, the data structure pointed to is a PixMap record; otherwise it is a BitMap record.
+                    imageOutput.WriteUShort((ushort)(rowBytes | 0x8000));
+                }
             }
-            else
+            else // RGB Image
             {
                 // Pixmap operation
-                imageOutput.WriteShort(Pict.OP_DIRECT_BITS_RECT); // 0x9A
-
+                imageOutput.WriteShort(Pict.OP_DIRECT_BITS_RECT); // 0x9A - sometimes called pict9a
                 // PixMap pointer (always 0x000000FF);
                 imageOutput.WriteInt(0xff);
+                // I see conflicting things about writing out row bytes at this point...
+                imageOutput.WriteUShort((ushort)(rowBytes | 0x8000));
             }
 
-            // Write rowBytes, this is 4 times the width.
-            // Set the high bit, to indicate a PixMap.
-
-            //rowBytes = 4 * pImage.Width;
-            rowBytes = pictComponents * imageDetails.Right; //  (int)imageDetails.Channels * imageDetails.Right;
-
-            // The offset in bytes from one row of the image to the next. The value must be even, less than $4000, and for best performance it should be a multiple of 4. 
-            // The high 2 bits of rowBytes are used as flags. If bit 15 = 1, the data structure pointed to is a PixMap record; otherwise it is a BitMap record.
-            //imageOutput.WriteUShort((ushort)(rowBytes | unchecked((short)0x8000)));
-            imageOutput.WriteUShort((ushort)(rowBytes | 0x8000));
-
+           
             // Write bounds rectangle (same as image bounds)
             imageOutput.WriteShort(imageDetails.Top); // top
             imageOutput.WriteShort(imageDetails.Left); // left
@@ -174,13 +247,10 @@ namespace PictCodec
             // Packing format (always 4: PackBits)
             // * 0 is default indexed packing.
             // * 1 is no packing(rowBytes < 8)
+            // * 2
+            // * 3
             // * 4 is default direct packing - run length encoded scan lines by component, red first.
-            if (rowBytes < 8)
-                imageOutput.WriteShort(1);
-            else if (imageDetails.IsIndexed)
-                imageOutput.WriteShort(0);
-            else
-                imageOutput.WriteShort(4);
+            imageOutput.WriteShort(packType);
 
             // Size of packed data (leave as 0)
             // The size of the packed image in bytes. When the packType field contains the value 0, this field is always set to 0
@@ -188,10 +258,10 @@ namespace PictCodec
 
             // Pixmap resolution, 72 dpi
             //imageOutput.WriteShort(Pict.MAC_DEFAULT_DPI+0.5);
-            imageOutput.WriteShort((ushort)Math.Ceiling(imageDetails.VerticalResolution+0.5));
+            imageOutput.WriteShort(72+0.5);
             imageOutput.WriteShort(0);
             //imageOutput.WriteShort(Pict.MAC_DEFAULT_DPI+0.5);
-            imageOutput.WriteShort((ushort)Math.Ceiling(imageDetails.HorizontalResolution+0.5));
+            imageOutput.WriteShort(72+0.5);
             //imageOutput.WriteUShort(38);
             imageOutput.WriteShort(0);
 
@@ -211,7 +281,7 @@ namespace PictCodec
             // Indexed pixels can have sizes of 1, 2, 4, and 8 bits; direct pixel sizes are 16 and 32 bits.
             imageOutput.WriteShort(pictBps);
 
-            // Pixel component count
+            // Pixel component count (planes) - ie 1 for indexed, 3 or 4 for RGB
             imageOutput.WriteShort(pictComponents);
 
             // Pixel component size
@@ -228,7 +298,7 @@ namespace PictCodec
                This leaves an unused high-order byte, which Color QuickDraw sets to 0.
             */
             if (imageDetails.IsIndexed)
-                imageOutput.WriteShort(imageDetails.BitsPerPixel);
+                imageOutput.WriteShort(pictBps);
             else if (imageDetails.BitsPerPixel == 16)
                 imageOutput.WriteShort(5);
             else
@@ -246,20 +316,22 @@ namespace PictCodec
             // Reserved (4 bytes)
             imageOutput.WriteInt(0);
 
-            // Indexed Colour:
+            // Write out ColorTable
             if (imageDetails.IsIndexed)
             {
-                imageOutput.WriteInt(0); // color seed
-                imageOutput.WriteShort(0); // Colour Flags
-                imageOutput.WriteShort((ushort) (imageDetails.Palette.Length - 1)); // Entry count 
+                imageOutput.WriteInt(0); // color seed - Resource ID
+                // Colour Flags Flags. A value of $0000 identifies this as a color table for a pixel map. A value of $8000 identifies this as a color table for an indexed device.
+                imageOutput.WriteShort(0);
+                // Entry count / Size. One less than the number of color specification entries in the rest of this resource.
+                imageOutput.WriteShort((ushort) (imageDetails.Palette.Length - 1)); 
                 for (ushort i = 0; i < imageDetails.Palette.Length; i++)
                 {
-                    imageOutput.WriteUShort(i); // pixel value
+                    imageOutput.WriteShort(i); // pixel value
+
                     // Each colour is a 16bit value...scale to short
                     imageOutput.WriteUShort(ScaleQuantumToShort(imageDetails.Palette[i].R));
                     imageOutput.WriteUShort(ScaleQuantumToShort(imageDetails.Palette[i].G));
                     imageOutput.WriteUShort(ScaleQuantumToShort(imageDetails.Palette[i].B));
-                    
                 }
             }
 
@@ -268,6 +340,7 @@ namespace PictCodec
             imageOutput.WriteShort(imageDetails.Left);
             imageOutput.WriteShort(imageDetails.Bottom);
             imageOutput.WriteShort(imageDetails.Right);
+
             // Dest Rect
             imageOutput.WriteShort(imageDetails.Top);
             imageOutput.WriteShort(imageDetails.Left);
@@ -286,12 +359,21 @@ namespace PictCodec
 
         }
 
+        /// <summary>
+        /// Writes and compresses (if needed) each scan line
+        /// </summary>
+        /// <param name="imageOutput"></param>
+        /// <param name="imageDetails"></param>
+        /// <param name="scanLine"></param>
+        /// <returns></returns>
         internal int WritePixelScanLine(BeBinaryWriter imageOutput, ImageDetails imageDetails, byte[] scanLine)
         {
             var components = imageDetails.Channels;
+        
             int xOffset = 0;
-            int w = imageDetails.Right;
- 
+            int w = imageDetails.Width;
+            uint bytesPerPixel = imageDetails.IsIndexed ? 1 : imageDetails.BitsPerPixel / 8;
+
             var pixels = scanLine;
             
             byte[] scanlineBytes = new byte[rowBytes];
@@ -301,11 +383,11 @@ namespace PictCodec
             // Treat the scanline.
             for (int x = 0; x < w; x++)
             {
-                //var colorIndex = y * bmpStride + x * components;
-                var colorIndex = x * components;
-
+                var colorIndex = x * bytesPerPixel;
                 if (imageDetails.IsIndexed)
                 {
+                    // TODO Pack 1,2,4 bit image data into a single byte...
+
                     scanlineBytes[x] = (byte)pixels[colorIndex];
                 }
                 else // True color 
@@ -313,11 +395,17 @@ namespace PictCodec
                     PaletteEntry color;
                     if (imageDetails.BitsPerPixel == 32)
                         color = new PaletteEntry(pixels[colorIndex + 3], pixels[colorIndex + 2], pixels[colorIndex + 1], pixels[colorIndex + 0]);
-                    else
+                    else if (imageDetails.BitsPerPixel == 24)
                         color = new PaletteEntry(255, pixels[colorIndex + 2], pixels[colorIndex + 1], pixels[colorIndex + 0]);
+                    else // 16 bit
+                    {
+                        //color = new PaletteEntry(255, pixels[colorIndex + 1] << 1, )
+                        var pixelShort = (short)((pixels[colorIndex + 0] << 8) + pixels[colorIndex + 1]);
+                        // not sure what mask apple uses
+                        color = new PaletteEntry(255, GetBytesFrom5BitValue(pixelShort & 0x7c), GetBytesFrom6BitValue(pixelShort & 0x03), GetBytesFrom5BitValue(pixelShort & 0x1f));
+                    }
                         
                     // TODO Handle 16-bit and 24-bit images
-
                     scanlineBytes[xOffset + x]          = color.A;
                     scanlineBytes[xOffset + w + x]      = color.R;
                     scanlineBytes[xOffset + 2 * w + x]  = color.G;
@@ -326,10 +414,7 @@ namespace PictCodec
             }
 
             // https://web.archive.org/web/20080705155158/http://developer.apple.com/technotes/tn/tn1023.html
-
-            // thinking the encoder needs to know something about our row bytes
             // Pack using PackBitsEncoder
-
             // Small images aren't compressed
             if (rowBytes < 8)
             {
@@ -338,19 +423,17 @@ namespace PictCodec
             }
             else // Pack the bytes
             {
-                var encoder = new PackBitsEncoder();
-
-                var packedBytes = encoder.compress(scanlineBytes);
-
+                var packedBytes = PackBitsCompressor.PackBits(scanlineBytes);
+                //var packedBytes = new PackBitsEncoder().compress(scanlineBytes);
                 if (rowBytes > 250) // apple says 250, ImageMagick has 200...hmm
                 {
                     imageOutput.WriteShort((short)packedBytes.Length);
-                    byteCount += 2;
+                    //byteCount += 2;
                 }
                 else
                 {
                     imageOutput.Write((byte)packedBytes.Length);
-                    byteCount++;
+                    //byteCount++;
                 }
 
                 byteCount += packedBytes.Length;
@@ -366,17 +449,17 @@ namespace PictCodec
 
 
 
-        internal void WriteTrailer(BeBinaryWriter imageOutput, int size)
+        internal void WriteTrailer(BeBinaryWriter imageOutput, int length)
         {
 
             // Write out end opcode. Be sure to be word-aligned.
-            Int32 length = size; //imageOutput.BaseStream.Length;
             if (length == -1)
             {
                 throw new IOException("Cannot write trailer without knowing length");
             }
 
-            if ((length & 1) > 0)
+            // Make sure we have an even number of bytes
+            if ((length & 1) != 0)
             {
                 imageOutput.Write((byte)0);
             }
@@ -385,11 +468,28 @@ namespace PictCodec
             imageOutput.Flush();
 
             var offset = imageOutput.Seek(512, SeekOrigin.Begin);
-            imageOutput.WriteShort((ushort)offset);
+            imageOutput.WriteUShort((ushort)offset);
 
             imageOutput.Flush();
 
         }
+
+
+        /// <summary>
+        /// Performs final shifting from a 5bit value to an 8bit one.
+        /// </summary>
+        /// <param name="value">The masked and shifted value.</param>
+        /// <returns>The <see cref="byte"/></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static byte GetBytesFrom5BitValue(int value) => (byte)((value << 3) | (value >> 2));
+
+        /// <summary>
+        /// Performs final shifting from a 6bit value to an 8bit one.
+        /// </summary>
+        /// <param name="value">The masked and shifted value.</param>
+        /// <returns>The <see cref="byte"/></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static byte GetBytesFrom6BitValue(int value) => (byte)((value << 2) | (value >> 4));
 
 
 

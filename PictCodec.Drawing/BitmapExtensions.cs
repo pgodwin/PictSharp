@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace PictCodec
+namespace PictCodec.Drawing
 {
     /// <summary>
     /// Extensions to System.Drawing.Bitmap to support PICT Encoding.
@@ -98,8 +98,8 @@ namespace PictCodec
             }
             else
             {
-                var palete = image.Palette.Entries.Select(e => new PaletteEntry(e.A, e.R, e.G, e.B)).ToArray();
-                details = new ImageDetails(image.Width, image.Height, (uint)bpp, image.HorizontalResolution, image.VerticalResolution, palete, getRow);
+                var palette = image.Palette.Entries.Select(e => new PaletteEntry(e.A, e.R, e.G, e.B)).ToArray();
+                details = new ImageDetails(image.Width, image.Height, (uint)bpp, image.HorizontalResolution, image.VerticalResolution, palette, getRow);
             }
 
             return details; 
@@ -125,10 +125,8 @@ namespace PictCodec
         /// <param name="filename">Output filename. If the File already exists, an IOException is throw</param>
         public static void SaveAsPict(this Bitmap bitmap, string filename)
         {
-            var image = bitmap.ToImageDetails();
-            var encoder = new Pict();
             using (var stream = new FileStream(filename, FileMode.CreateNew, FileAccess.Write, FileShare.None))
-                encoder.Encode(stream, image);
+                SaveAsPict(bitmap, stream);
         }
 
     }

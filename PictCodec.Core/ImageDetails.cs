@@ -30,9 +30,9 @@ namespace PictCodec
             this.Channels = channels;
             this.IsIndexed = false;
             this.Palette = null;
-            
-            this.HorizontalResolution = horizontalRes;
-            this.VerticalResolution = verticalRes;
+
+            this.HorizontalResolution = (ushort)Math.Floor(horizontalRes + 0.5);
+            this.VerticalResolution = (ushort)Math.Floor(verticalRes + 0.5);
 
             this.GetScanline = getScanline;
         }
@@ -52,8 +52,8 @@ namespace PictCodec
 
             
 
-            this.HorizontalResolution = horizontalRes;
-            this.VerticalResolution = verticalRes;
+            this.HorizontalResolution = (ushort)Math.Floor(horizontalRes + 0.5);
+            this.VerticalResolution = (ushort)Math.Floor(verticalRes + 0.5); 
 
             this.GetScanline = getScanline;
         }
@@ -73,8 +73,8 @@ namespace PictCodec
         public int Right { get; }
         public int Width { get; }
         public int Height { get; }
-        public double VerticalResolution { get; }
-        public double HorizontalResolution { get; }
+        public ushort VerticalResolution { get; }
+        public ushort HorizontalResolution { get; }
 
         public PaletteEntry[] Palette { get; }
 
