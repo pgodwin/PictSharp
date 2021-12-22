@@ -227,14 +227,33 @@ namespace PictCodec
             {
                 if (imageDetails.BitsPerPixel == 1)
                 {
-                    //imageOutput.WriteShort(Pict.OP_BITS_RECT);
-                    //imageOutput.WriteShort(rowBytes);
+                    imageOutput.WriteShort(Pict.OP_BITS_RECT);
+                    imageOutput.WriteShort(rowBytes);
 
-                    // Need to write the bitmap
-                    imageOutput.WriteShort(Pict.OP_PACK_BITS_RECT); // Packbits
-                    // The offset in bytes from one row of the image to the next. The value must be even, less than $4000, and for best performance it should be a multiple of 4. 
-                    // The high 2 bits of rowBytes are used as flags. If bit 15 = 1, the data structure pointed to is a PixMap record; otherwise it is a BitMap record.
-                    imageOutput.WriteUShort((ushort)(rowBytes));
+                    // Write bounds rectangle (same as image bounds)
+                    imageOutput.WriteShort(imageDetails.Top); // top
+                    imageOutput.WriteShort(imageDetails.Left); // left
+                    imageOutput.WriteShort(imageDetails.Bottom); // TODO: Handle overflow? // bottom
+                    imageOutput.WriteShort(imageDetails.Right); // right
+
+                    // Source and dest rect (both are same as image bounds)
+                    imageOutput.WriteShort(imageDetails.Top);
+                    imageOutput.WriteShort(imageDetails.Left);
+                    imageOutput.WriteShort(imageDetails.Bottom);
+                    imageOutput.WriteShort(imageDetails.Right);
+
+                    // Dest Rect
+                    imageOutput.WriteShort(imageDetails.Top);
+                    imageOutput.WriteShort(imageDetails.Left);
+                    imageOutput.WriteShort(imageDetails.Bottom);
+                    imageOutput.WriteShort(imageDetails.Right);
+
+                    // Transfer mode
+                    imageOutput.WriteShort(0);
+                    imageOutput.Flush();
+
+                    return;
+
                 }
                 else
                 {
@@ -260,6 +279,8 @@ namespace PictCodec
             imageOutput.WriteShort(imageDetails.Left); // left
             imageOutput.WriteShort(imageDetails.Bottom); // TODO: Handle overflow? // bottom
             imageOutput.WriteShort(imageDetails.Right); // right
+
+         
             
             // PixMap record version
             // The version number of Color QuickDraw that created this PixMap record. 
@@ -390,15 +411,18 @@ namespace PictCodec
         /// <returns></returns>
         internal int WritePixelScanLine(BeBinaryWriter imageOutput, ImageDetails imageDetails, byte[] scanLine)
         {
-            var components = imageDetails.Channels;
-        
             int xOffset = 0;
-            int w = imageDetails.IsIndexed ? packedBytes : imageDetails.Width;
-            uint bytesPerPixel = imageDetails.IsIndexed ? 1 : imageDetails.BitsPerPixel / 8;          
             var pixels = scanLine;
-            var pixelsPerByte = 8 / imageDetails.BitsPerPixel;
+            int w = imageDetails.IsIndexed ? packedBytes : imageDetails.Width;
+            
+            uint bytesPerPixel = imageDetails.IsIndexed ? 1 : imageDetails.BitsPerPixel / 8;          
+            uint pixelsPerByte = 8 / imageDetails.BitsPerPixel;
             
             byte[] scanlineBytes = new byte[rowBytes];
+            bool invert = imageDetails.BitsPerPixel == 1;
+
+            // Mask for Pixel Packing based on bits per pixel
+            int mask = (1 << (int)imageDetails.BitsPerPixel) - 1;
 
             int byteCount = 0;
 
@@ -414,17 +438,19 @@ namespace PictCodec
                     }
                     else
                     {
-                        // TODO Pack 1,2,4 bit image data into a single byte...
-                        int mask = (1 << (int)imageDetails.BitsPerPixel) - 1;
+                        // Pack 1, 2, 4 bit image palette entries into a single byte
                         int shift = 8 - (int)imageDetails.BitsPerPixel;
-                        byte indices = 0;
-
+                        // 1bpp images are inverted, that is zero is white.
+                        byte packedPixel = 0;
                         for (int j = 0; j < pixelsPerByte; j++)
                         {
-                            indices = (byte)(indices | ((byte)(pixels[x*pixelsPerByte +j] & mask) << shift));
+                            var pixel = pixels[x * pixelsPerByte + j];
+                            if (invert)
+                                pixel = (byte)~pixel;
+                            packedPixel = (byte)(packedPixel | ((byte)(pixel & mask) << shift));
                             shift-=(int)imageDetails.BitsPerPixel;; 
                         }
-                        scanlineBytes[x] = indices;
+                        scanlineBytes[x] = packedPixel;
                     }
                 }
                 else // True color 
