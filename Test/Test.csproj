@@ -75,9 +75,6 @@
     <Content Include="lenna_gray.bmp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Lenna.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Lenna1.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -96,18 +93,15 @@
     <Content Include="Lenna8.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Lenna8bit.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PictCodec.Drawing\PictCodec.Drawing.csproj">
       <Project>{38c72a15-e0a7-420c-b4d2-c67e1a63ceba}</Project>
       <Name>PictCodec.Drawing</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PictCodec.ImageSharp\PictCodec.ImageSharp.csproj">
+    <ProjectReference Include="..\PictCodec.ImageSharp\PictCodec.ImageSharpAdaptor.csproj">
       <Project>{cafd139a-075c-495d-84f4-ee225d4d1210}</Project>
-      <Name>PictCodec.ImageSharp</Name>
+      <Name>PictCodec.ImageSharpAdaptor</Name>
     </ProjectReference>
     <ProjectReference Include="..\PictCodec.Core\PictCodec.Core.csproj">
       <Project>{429b42de-0ca2-408d-87cf-ba703fd4ee45}</Project>

@@ -1,7 +1,7 @@
 ﻿using SixLabors.ImageSharp.Formats;
 using System.Collections.Generic;
 
-namespace PictCodec.ImageSharp
+namespace PictCodec.ImageSharpAdaptor
 {
     /// <summary>
     /// Registers the image encoder, decoders and mime type detectors for the Apple PICT format.

@@ -141,9 +141,9 @@ namespace PictCodec
             else if (imageDetails.BitsPerPixel == 16)
             {
                 packedBytes = imageDetails.Width * 2;
-                rowBytes = imageDetails.Width * 4;
+                rowBytes = imageDetails.Width * 2;
                 sourceRowBytes = imageDetails.Width * 2;
-                packType = PackType.PackBitsRgb;
+                packType = PackType.PackBits;
             }
             else if (imageDetails.BitsPerPixel == 24)
             {
@@ -422,7 +422,14 @@ namespace PictCodec
             bool invert = imageDetails.BitsPerPixel == 1;
 
             // Mask for Pixel Packing based on bits per pixel
-            int mask = (1 << (int)imageDetails.BitsPerPixel) - 1;
+            int packMask = (1 << (int)imageDetails.BitsPerPixel) - 1;
+
+            // Masks for RGB555 (16bit) encoding
+            int redMask = 0x7C00;
+            int greenMask = 0x3E0;
+            int blueMask = 0x1F;
+
+
 
             int byteCount = 0;
 
@@ -447,32 +454,41 @@ namespace PictCodec
                             var pixel = pixels[x * pixelsPerByte + j];
                             if (invert)
                                 pixel = (byte)~pixel;
-                            packedPixel = (byte)(packedPixel | ((byte)(pixel & mask) << shift));
+                            packedPixel = (byte)(packedPixel | ((byte)(pixel & packMask) << shift));
                             shift-=(int)imageDetails.BitsPerPixel;; 
                         }
                         scanlineBytes[x] = packedPixel;
                     }
+                }
+                else if (imageDetails.BitsPerPixel == 16)
+                {
+                    // not working yet, not sure if it's the header or what...
+                    var pixelShort = (short)((pixels[colorIndex + 0] << 8) + pixels[colorIndex + 1]);
+                    byte r = (byte)(((pixelShort & redMask) >> 10) << 3);
+                    byte g = (byte)(((pixelShort & greenMask) >> 5) << 3);
+                    byte b = (byte)((pixelShort & blueMask) << 3);
+                    
+                    var color = new PaletteEntry(255, r, g, b);
+
+                    // this is the colour at this location, but we can probably just copy it back out?
+                    scanlineBytes[colorIndex] = pixels[colorIndex +1];
+                    scanlineBytes[colorIndex+1] = pixels[colorIndex];
+
+
                 }
                 else // True color 
                 {
                     PaletteEntry color;
                     if (imageDetails.BitsPerPixel == 32)
                         color = new PaletteEntry(pixels[colorIndex + 3], pixels[colorIndex + 2], pixels[colorIndex + 1], pixels[colorIndex + 0]);
-                    else if (imageDetails.BitsPerPixel == 24)
+                    else //(imageDetails.BitsPerPixel == 24)
                         color = new PaletteEntry(255, pixels[colorIndex + 2], pixels[colorIndex + 1], pixels[colorIndex + 0]);
-                    else // 16 bit
-                    {
-                        //color = new PaletteEntry(255, pixels[colorIndex + 1] << 1, )
-                        var pixelShort = (short)((pixels[colorIndex + 0] << 8) + pixels[colorIndex + 1]);
-                        // not sure what mask apple uses
-                        color = new PaletteEntry(255, GetBytesFrom5BitValue(pixelShort & 0x7c), GetBytesFrom6BitValue(pixelShort & 0x03), GetBytesFrom5BitValue(pixelShort & 0x1f));
-                    }
-                        
-                    // TODO Handle 16-bit and 24-bit images
+                 
+                    /// Write out as rows of pixels, 1 per channel
                     scanlineBytes[xOffset + x]          = color.A;
                     scanlineBytes[xOffset + w + x]      = color.R;
                     scanlineBytes[xOffset + 2 * w + x]  = color.G;
-                    scanlineBytes[xOffset + 3 * w + x]  = color.B;
+                    scanlineBytes[xOffset + 3 * w + x]  = color.B; 
                 }
             }
 

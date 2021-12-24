@@ -1,7 +1,7 @@
 ﻿using SixLabors.ImageSharp;
 
 
-namespace PictCodec.ImageSharp
+namespace PictCodec.ImageSharpAdaptor
 {
     public class PictConfigurationModule : IConfigurationModule
     {

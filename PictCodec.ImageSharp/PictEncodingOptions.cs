@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace PictCodec.ImageSharp
+namespace PictCodec.ImageSharpAdaptor
 {
     public class PictEncodingOptions : IPictEncodingOptions
     {
@@ -15,7 +15,7 @@ namespace PictCodec.ImageSharp
         {
             this.PictBpp = source.PictBpp;
             this.Quantizer = source.Quantizer;
-            this.IsIndexed = source.IsIndexed;
+            //this.IsIndexed = source.IsIndexed;
         }
 
 
@@ -25,6 +25,6 @@ namespace PictCodec.ImageSharp
         /// <inheritdoc/>
         public PictBpp PictBpp { get; set; }
 
-        public bool IsIndexed { get; set; }
+        public bool IsIndexed  => (int)PictBpp <= 8;
     }
 }

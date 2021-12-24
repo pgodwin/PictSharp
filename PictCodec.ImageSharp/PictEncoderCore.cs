@@ -16,7 +16,7 @@ using System.Runtime.CompilerServices;
 using SixLabors.ImageSharp.ColorSpaces;
 using System.Threading.Tasks;
 
-namespace PictCodec.ImageSharp
+namespace PictCodec.ImageSharpAdaptor
 {
     internal class PictEncoderCore : IImageEncoderInternals, IDisposable
     {
@@ -128,7 +128,6 @@ namespace PictCodec.ImageSharp
             {
                 Rgba32 rgba = new Rgba32();
                 sourcePalette[i].ToRgba32(ref rgba);
-
                 destinationPalette[i] = new PaletteEntry(rgba.A, rgba.R, rgba.G, rgba.B);
             }
             return destinationPalette;
@@ -144,6 +143,9 @@ namespace PictCodec.ImageSharp
         /// <returns></returns>
         private ReadOnlySpan<byte> GetScanLine<TPixel>(Image<TPixel> image, IndexedImageFrame<TPixel> quantized, int y) where TPixel : unmanaged, IPixel<TPixel>
         {
+            if (quantized == null && options.IsIndexed)
+                throw new Exception("Quantized image expected for indexed images");
+
             if (quantized != null)
             {
                 return quantized.GetPixelRowSpan(y);

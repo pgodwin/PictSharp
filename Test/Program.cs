@@ -2,8 +2,9 @@
 using System;
 using System.Drawing;
 using System.IO;
-using PictCodec.ImageSharp;
+using PictCodec.ImageSharpAdaptor;
 using PictCodec.Drawing;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Test
 {
@@ -33,20 +34,20 @@ namespace Test
         //        //}
         //    }
 
-            var module = new PictCodec.ImageSharp.PictConfigurationModule();
+            var module = new PictConfigurationModule();
             module.Configure(SixLabors.ImageSharp.Configuration.Default);
 
             // Test ImageSharp
 
-            using (var image = SixLabors.ImageSharp.Image.Load("Lenna32.png"))
+            using (var image = SixLabors.ImageSharp.Image.Load<Rgba32>("Lenna32.png"))
             {
                 foreach (PictBpp bpp in Enum.GetValues(typeof(PictBpp)))
                 {
 
                     var outName = "Lenna" + bpp.ToString() + "_imageSharp.pict";
                     var encoder = new PictEncoder();
-                    if ((int)bpp < (int)PictBpp.Bit16)
-                        encoder.IsIndexed = true;
+                    //if ((int)bpp < (int)PictBpp.Bit16)
+                    //    encoder.IsIndexed = true;
 
                     encoder.PictBpp = bpp;
                     image.SaveAsPict(outName, encoder);
