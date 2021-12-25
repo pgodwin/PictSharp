@@ -1,7 +1,7 @@
 ﻿using System.IO;
 
 
-namespace PictCodec.Extensions
+namespace PictSharp.Extensions
 {
     public static class MemoryStreamExtensions
     {

@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace PictCodec
+namespace PictSharp
 {
     public interface IEncoder
     {

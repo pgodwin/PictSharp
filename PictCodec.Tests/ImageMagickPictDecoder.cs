@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SixLabors.ImageSharp;
 
-namespace PictCodec.Tests
+namespace PictSharp.Tests
 {
     internal class ImageMagickPictDecoder
     {

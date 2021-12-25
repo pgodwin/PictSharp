@@ -1,6 +1,6 @@
 ﻿using SixLabors.ImageSharp.Processing.Processors.Quantization;
 
-namespace PictCodec.ImageSharpAdaptor
+namespace PictSharp.ImageSharpAdaptor
 {
     public interface IPictEncodingOptions
     {

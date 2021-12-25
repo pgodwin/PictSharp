@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace PictCodec.ImageSharpAdaptor
+namespace PictSharp.ImageSharpAdaptor
 {
     public class PictEncodingOptions : IPictEncodingOptions
     {

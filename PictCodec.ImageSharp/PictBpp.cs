@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace PictCodec.ImageSharpAdaptor
+namespace PictSharp.ImageSharpAdaptor
 {
     /// <summary>
     /// Provides enumeration for the available Pict Bit Depths.

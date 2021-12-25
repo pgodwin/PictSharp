@@ -1,10 +1,10 @@
-﻿using PictCodec.Extensions;
+﻿using PictSharp.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace PictCodec
+namespace PictSharp
 {
     /// <summary>
     /// https://github.com/yigolden/TiffLibrary/blob/main/src/TiffLibrary/Compression/PackBitsCompressionAlgorithm.cs

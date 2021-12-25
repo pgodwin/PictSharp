@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace PictCodec.ImageSharpAdaptor
+namespace PictSharp.ImageSharpAdaptor
 {
     /**
      * This is internal to the ImageSharp library, so just reproduced here to make life easier on myself. 

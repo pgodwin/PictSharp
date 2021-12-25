@@ -1,11 +1,11 @@
 ﻿using Be.IO;
-using PictCodec.Extensions;
+using PictSharp.Extensions;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 
-namespace PictCodec
+namespace PictSharp
 {
     /*
      * Based on TwelveMonkeys by Harald Kuhr

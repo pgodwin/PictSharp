@@ -2,7 +2,7 @@
 using System;
 
 
-namespace PictCodec.Extensions
+namespace PictSharp.Extensions
 {
     public static class StreamExtensions
     {

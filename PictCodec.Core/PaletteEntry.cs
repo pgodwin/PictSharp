@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace PictCodec
+namespace PictSharp
 {
     /// <summary>
     /// Replacement for .NET "Color" class. Represents a colour in a palette, or a (non-index) pixel in an image

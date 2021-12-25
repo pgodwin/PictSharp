@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace PictCodec
+namespace PictSharp
 {
     /// <summary>
     /// Color QuickDraw has always supported packed PICTs. See Inside Macintosh, Volume V, for details on how CLUT PixMaps are packed. 

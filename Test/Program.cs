@@ -2,8 +2,8 @@
 using System;
 using System.Drawing;
 using System.IO;
-using PictCodec.ImageSharpAdaptor;
-using PictCodec.Drawing;
+using PictSharp.ImageSharpAdaptor;
+using PictSharp.Drawing;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace Test

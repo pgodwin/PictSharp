@@ -16,7 +16,7 @@ using System.Runtime.CompilerServices;
 using SixLabors.ImageSharp.ColorSpaces;
 using System.Threading.Tasks;
 
-namespace PictCodec.ImageSharpAdaptor
+namespace PictSharp.ImageSharpAdaptor
 {
     internal class PictEncoderCore : IImageEncoderInternals, IDisposable
     {
@@ -70,7 +70,7 @@ namespace PictCodec.ImageSharpAdaptor
 
             ImageMetadata metadata = image.Metadata;
             IndexedImageFrame<TPixel> quantized = default;
-            PictCodec.PaletteEntry[] palette = default;
+            PictSharp.PaletteEntry[] palette = default;
             ImageDetails imageDetails = default;
             
 
@@ -106,7 +106,7 @@ namespace PictCodec.ImageSharpAdaptor
                     getScanLine);
             }
 
-            PictCodec.Pict encoder = new Pict();
+            PictSharp.Pict encoder = new Pict();
             encoder.Encode(stream, imageDetails, cancellationToken);
             stream.Flush();
 

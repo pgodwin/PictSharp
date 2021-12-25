@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PictCodec.Tests
+namespace PictSharp.Tests
 {
     /// <summary>
     /// Flags that are mapped to PackedPixel types.

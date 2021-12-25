@@ -1,11 +1,11 @@
-using PictCodec.ImageSharpAdaptor;
+using PictSharp.ImageSharpAdaptor;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using Xunit;
-using static PictCodec.Tests.TestImages;
+using static PictSharp.Tests.TestImages;
 
-namespace PictCodec.Tests
+namespace PictSharp.Tests
 {
     [Trait("Format", "Pict")]
     public class Encoder

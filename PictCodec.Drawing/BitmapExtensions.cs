@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace PictCodec.Drawing
+namespace PictSharp.Drawing
 {
     /// <summary>
     /// Extensions to System.Drawing.Bitmap to support PICT Encoding.
