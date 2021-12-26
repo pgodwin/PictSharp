@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿
+using System;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using PictSharp.ImageSharpAdaptor;
+using PictSharp.Drawing;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Test
 {
@@ -12,16 +12,49 @@ namespace Test
     {
         static void Main(string[] args)
         {
+        //    var files = new string[] { "Lenna32.png","Lenna8.png", "Lenna8bit.png", "lenna_gray.bmp" };
+        //    foreach (var file in files)
+        //    {
+        //        //try
+        //        //{
 
-            var original = new Bitmap("Lenna.png");
-            //original.SetResolution(96, 96);
-            //var image = new Bitmap(original);
-            var image = original;
-            var pictEncoder = new PictCodec.Pict();
-            if (File.Exists("Lenna.pict"))
-                File.Delete("Lenna.pict");
-            using (var output = new FileStream("Lenna.pict", FileMode.CreateNew))
-                pictEncoder.Encode(output, image);
+        //            var image = new System.Drawing.Bitmap(file); ;
+        //            var outName = Path.GetFileNameWithoutExtension(file) + "_drawing.pict";
+
+        //            if (File.Exists(outName))
+        //                File.Delete(outName);
+                    
+        //            using (var output = new FileStream(outName, FileMode.CreateNew))
+        //                image.SaveAsPict(output);
+
+        //        //}
+        //        //catch (Exception ex)
+        //        //{
+        //        //    Console.WriteLine($"{file} failed {ex}");
+        //        //}
+        //    }
+
+            var module = new PictConfigurationModule();
+            module.Configure(SixLabors.ImageSharp.Configuration.Default);
+
+            // Test ImageSharp
+
+            using (var image = SixLabors.ImageSharp.Image.Load<Rgba32>("Lenna32.png"))
+            {
+                foreach (PictBpp bpp in Enum.GetValues(typeof(PictBpp)))
+                {
+
+                    var outName = "Lenna" + bpp.ToString() + "_imageSharp.pict";
+                    var encoder = new PictEncoder();
+                    //if ((int)bpp < (int)PictBpp.Bit16)
+                    //    encoder.IsIndexed = true;
+
+                    encoder.PictBpp = bpp;
+                    image.SaveAsPict(outName, encoder);
+                }
+            }
+
+
         }
     }
 }
