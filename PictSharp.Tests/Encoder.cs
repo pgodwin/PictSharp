@@ -2,6 +2,8 @@ using PictSharp.ImageSharpAdaptor;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using Xunit;
 using static PictSharp.Tests.TestImages;
 
@@ -12,7 +14,7 @@ namespace PictSharp.Tests
     {
 
 
-        public static TheoryData<Type, string, PictBpp> BitDepths = new()
+        public static TheoryData<Type, string, PictBpp> BitDepths = new TheoryData<Type, string, PictBpp>
         {
             { typeof(Rgba32), TestImages.InputImages.Rgb32.Name, PictBpp.Bit1 },
             { typeof(Rgba32), TestImages.InputImages.Rgb32.Name, PictBpp.Bit2 },
