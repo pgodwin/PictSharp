@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>PictCodec</RootNamespace>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Authors>pgodiwn</Authors>
+    <Description>Provides generic, core Apple PICT V2 Encoding for 1bpp, 2bpp, 4bpp, 8bpp and 32bpp images.</Description>
+    <RepositoryUrl>https://github.com/pgodwin/PictSharp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>pictsharp;pict;encoding;compression</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  
+  <ItemGroup>
+    <PackageReference Include="Be.IO-multi" Version="1.0.0" />
+  </ItemGroup>
+
+</Project>

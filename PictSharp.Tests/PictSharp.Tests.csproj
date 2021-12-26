@@ -43,8 +43,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PictCodec.Core\PictSharp.Core.csproj" />
-    <ProjectReference Include="..\PictCodec.ImageSharp\PictSharp.ImageSharpAdaptor.csproj" />
+    <ProjectReference Include="..\PictSharp.Core\PictSharp.Core.csproj" />
+    <ProjectReference Include="..\PictSharp.ImageSharpAdaptor\PictSharp.ImageSharpAdaptor.csproj" />
   </ItemGroup>
 
 </Project>
