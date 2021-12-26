@@ -18,7 +18,9 @@ jobs:
           dotnet-version: ${{ matrix.dotnet-version }}
       - name: Install dependencies
         run: dotnet restore
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
+      - name: Build Core
+        run: dotnet build --configuration Release --no-restore PictSharp.Core
+      - name: Build ImageSharp
+        run: dotnet build --configuration Release --no-restore PictSharp.ImageSharpAdaptor
       - name: Test
-        run: dotnet test --no-restore --verbosity normal
+        run: dotnet test --no-restore --verbosity normal PictSharp.Tests
