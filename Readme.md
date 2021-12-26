@@ -3,22 +3,21 @@ PictSharp
 
 PictSharp is a .NET library for converting images to Apple's [PICT Format](https://en.wikipedia.org/wiki/PICT). 
 
-It's based on PICT encoder from TwelveMonkeys by Harald Kuhr. 
-8-bit support is based on studying the ImageMagick and Apple Quickdraw documentation. 
+It's based on the 32-bit PICT encoder from TwelveMonkeys by Harald Kuhr. Indexed image support is based on studying the 
+ImageMagick and Apple Quickdraw documentation.
 
-The PackBits encoding is ported from the Apache Commons Image Library Java implementation.
+PackBits has been ported from the TIFF PackBits implementation in ImageSharp.
 
-Implemented today is support for:
+## What's supported?
+ - PICT 2.0 Encoding of bitmap data
  - 32-bit (4-channel) PackBits compressed
- - 8-bit (1-channel) PackBits compressed 
-
-All are PICT 2.0 format (basically MacII onwards).
+ - 2, 4 & 8-bit (1-channel) PackBits compressed 
+ - 1-bit Images PackBit compressed
 
 What's not supported?
 =====================
- - 16 and 24-bit images aren't working
- - 1 and 4-bit images are probably not working.
  - Decoding any PICT images
+ - 16-Bit images (more work required)
 
 Usage
 =====
