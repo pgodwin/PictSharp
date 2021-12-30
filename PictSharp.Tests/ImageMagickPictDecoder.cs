@@ -3,12 +3,8 @@ using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.Memory;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using SixLabors.ImageSharp;
 
 namespace PictSharp.Tests
@@ -53,7 +49,43 @@ namespace PictSharp.Tests
             }
         }
 
+        public Image<TPixel>ReadPict<TPixel>(Configuration configuration, string filename)
+             where TPixel : unmanaged, SixLabors.ImageSharp.PixelFormats.IPixel<TPixel>
+        {
+         
 
+            using (Magick.MagickImage magickImage = new Magick.MagickImage(filename))
+            {
+                var width = magickImage.Width;
+                var height = magickImage.Height;
+
+                var image = new Image<TPixel>(configuration, width, height);
+
+
+                var framePixels = image.GetPixelMemoryGroup();
+
+                using Magick.IUnsafePixelCollection<ushort> pixels = magickImage.GetPixelsUnsafe();
+                if (magickImage.Depth == 8 || magickImage.Depth == 6 || magickImage.Depth == 4 || magickImage.Depth == 2 || magickImage.Depth == 1 || magickImage.Depth == 10 || magickImage.Depth == 12)
+                {
+                    byte[] data = pixels.ToByteArray(Magick.PixelMapping.RGBA);
+
+                    FromRgba32Bytes(configuration, data, framePixels);
+
+                }
+                else if (magickImage.Depth == 16 || magickImage.Depth == 14)
+                {
+                    ushort[] data = pixels.ToShortArray(Magick.PixelMapping.RGBA);
+                    Span<byte> bytes = MemoryMarshal.Cast<ushort, byte>(data.AsSpan());
+                    FromRgba64Bytes(configuration, bytes, framePixels);
+                }
+                else
+                {
+                    throw new InvalidOperationException();
+                }
+                return image;
+
+            }
+        }
 
         /// <summary>
         /// Returns a decoded image from ImageMagick - assumes only a singal frame, 

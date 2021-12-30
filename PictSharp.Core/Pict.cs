@@ -51,7 +51,7 @@ namespace PictSharp
     {
 
 
-       
+
         public void Encode(Stream output, ImageDetails image) => this.Encode(output, image, CancellationToken.None);
         public void Encode(Stream output, ImageDetails image, CancellationToken cancellationToken)
         {
@@ -61,7 +61,7 @@ namespace PictSharp
                 int size = 0;
 
                 this.WriteHeader(stream, image);
-               
+
                 for (int y = 0; y < h; y++)
                 {
                     if (cancellationToken.IsCancellationRequested)
@@ -69,7 +69,7 @@ namespace PictSharp
                         stream.Flush();
                         break;
                     }
-                        
+
                     var row = image.GetScanline(y);
                     size += this.WritePixelScanLine(stream, image, row);
                 }
@@ -273,15 +273,15 @@ namespace PictSharp
                 imageOutput.WriteUShort((ushort)(rowBytes | 0x8000));
             }
 
-           
+
             // Write bounds rectangle (same as image bounds)
             imageOutput.WriteShort(imageDetails.Top); // top
             imageOutput.WriteShort(imageDetails.Left); // left
             imageOutput.WriteShort(imageDetails.Bottom); // TODO: Handle overflow? // bottom
             imageOutput.WriteShort(imageDetails.Right); // right
 
-         
-            
+
+
             // PixMap record version
             // The version number of Color QuickDraw that created this PixMap record. 
             // The value of pmVersion is normally 0. If pmVersion is 4, Color QuickDraw treats the PixMap record's baseAddr field as 32-bit clean.
@@ -366,7 +366,7 @@ namespace PictSharp
                 // Colour Flags Flags. A value of $0000 identifies this as a color table for a pixel map. A value of $8000 identifies this as a color table for an indexed device.
                 imageOutput.WriteShort(0);
                 // Entry count / Size. One less than the number of color specification entries in the rest of this resource.
-                imageOutput.WriteShort((ushort) (imageDetails.Palette.Length - 1)); 
+                imageOutput.WriteShort((ushort)(imageDetails.Palette.Length - 1));
                 for (ushort i = 0; i < imageDetails.Palette.Length; i++)
                 {
                     imageOutput.WriteShort(i); // pixel value
@@ -414,10 +414,10 @@ namespace PictSharp
             int xOffset = 0;
             var pixels = scanLine;
             int w = imageDetails.IsIndexed ? packedBytes : imageDetails.Width;
-            
-            uint bytesPerPixel = imageDetails.IsIndexed ? 1 : imageDetails.BitsPerPixel / 8;          
+
+            uint bytesPerPixel = imageDetails.IsIndexed ? 1 : imageDetails.BitsPerPixel / 8;
             uint pixelsPerByte = 8 / imageDetails.BitsPerPixel;
-            
+
             byte[] scanlineBytes = new byte[rowBytes];
             bool invert = imageDetails.BitsPerPixel == 1;
 
@@ -433,31 +433,49 @@ namespace PictSharp
 
             int byteCount = 0;
 
+
+
             // Treat the scanline.
             for (int x = 0; x < w; x++)
             {
                 var colorIndex = x * bytesPerPixel;
                 if (imageDetails.IsIndexed)
                 {
+                    // 8 Bit images
                     if (pixelsPerByte == 1)
                     {
                         scanlineBytes[x] = pixels[x];
                     }
                     else
                     {
+
                         // Pack 1, 2, 4 bit image palette entries into a single byte
                         int shift = 8 - (int)imageDetails.BitsPerPixel;
-                        // 1bpp images are inverted, that is zero is white.
                         byte packedPixel = 0;
-                        for (int j = 0; j < pixelsPerByte; j++)
+                        xOffset = x * (int)pixelsPerByte;
+
+                        // Calculate the reamining pixels from the end of the buffer
+                        int remaining = 0;
+                        byte pixel;
+
+                        
+                        if (xOffset >= pixels.Length - pixelsPerByte)
+                            remaining = (int)pixelsPerByte - (pixels.Length % (int)pixelsPerByte); ;
+                        for (int j = 0; j < pixelsPerByte - remaining; j++)
                         {
-                            var pixel = pixels[x * pixelsPerByte + j];
+                           
+                           pixel = pixels[xOffset + j];
+
+                            // 1bpp images are inverted, that is zero is white.
                             if (invert)
-                                pixel = (byte)~pixel;
+                                pixel = (byte)~pixel; // reverse the pixel value
+
                             packedPixel = (byte)(packedPixel | ((byte)(pixel & packMask) << shift));
-                            shift-=(int)imageDetails.BitsPerPixel;; 
+                            shift -= (int)imageDetails.BitsPerPixel;
                         }
                         scanlineBytes[x] = packedPixel;
+                        
+                        
                     }
                 }
                 else if (imageDetails.BitsPerPixel == 16)
