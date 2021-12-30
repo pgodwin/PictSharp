@@ -278,4 +278,5 @@ __pycache__/
 # tools/
 
 # Ignore the Test Output
-PictSharp.Tests/output
+PictSharp.Tests/output/*.pict
+PictSharp.Tests/output/*.png
