@@ -36,7 +36,7 @@ namespace PictSharp.Tests
         public void TestEncoding(Type pixelType, string filename, PictBpp bpp)
         {
            
-            filename = "../../../input/" + filename;
+            filename = "./input/" + filename;
 
             bool match;
             if (pixelType == typeof(Rgba32))
@@ -54,7 +54,7 @@ namespace PictSharp.Tests
             // Load the image
             //using var sourceImage = Image<Rgba32>.Load<Rgba32>(filename);
             var imageMagickDecoder = ImageMagickPictDecoder.Instance;
-            var outputPath = "../../../output/" + Path.GetFileNameWithoutExtension(filename);
+            var outputPath = "./output/" + Path.GetFileNameWithoutExtension(filename);
             var pictPath = $"{outputPath}_{bpp}.pict";
             using var sourceImage = Image<TPixel>.Load<TPixel>(filename);
             using var pictStream = new System.IO.MemoryStream();
