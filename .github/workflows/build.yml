@@ -20,4 +20,21 @@ jobs:
       - name: Build ImageSharp
         run: dotnet build --configuration Release --no-restore PictSharp.ImageSharpAdaptor
       - name: Test
-        run: dotnet test --no-restore --verbosity normal PictSharp.Tests
+        run: dotnet test --no-restore --verbosity normal PictSharp.Tests /p:BuildNetCoreOnly=true
+  framework-build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup MSBuild Path
+        uses: warrenbuckley/Setup-MSBuild@v1
+      - name: Restore NuGet Packages
+        run: nuget restore SimpleFrameworkApp.sln
+      - name: Build PictSharp.Drawing
+        run: msbuild PictSharp.sln /p:Configuration=Release 
+      - name: Package
+        run: msbuild -t:pack /p:Configuration=Release .\PictSharp.Drawing\PictSharp.Drawing.csproj
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v1.0.0
+        with:
+          name: dotnet-4-7-1
+          path: bin\Release
