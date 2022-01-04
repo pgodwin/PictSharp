@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace PictSharp
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class PictBase
     {
 
@@ -149,6 +150,7 @@ namespace PictSharp
         public const int OP_END_OF_PICTURE = 0xFF;
         public const int OP_VERSION_2 = 0x02FF;
         public const int OP_COMPRESSED_QUICKTIME = 0x8200;
+
         public const int OP_UNCOMPRESSED_QUICKTIME = 0x8201;
 
         public const string APPLE_USE_RESERVED_FIELD = "Reserved for Apple use.";
@@ -191,4 +193,5 @@ namespace PictSharp
          */
 
     }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

@@ -1,10 +1,88 @@
 name: build
 on: [push, pull_request]
 jobs:
-  build:
+  core-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Setup .NET Core SDK 6.0
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: 6.0.x
+      - uses: paulhatch/semantic-version@v4.0.2
+        id: semantic_version
+        with:
+          tag_prefix: "v"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install dependencies
+        run: dotnet restore
+      - name: Build Core
+        run: dotnet build --configuration Release --no-restore PictSharp.Core -o ./bin
+      - name: Build ImageSharp
+        run: dotnet build --configuration Release --no-restore PictSharp.ImageSharpAdaptor -o ./bin /p:Version=${{ steps.semantic_version.outputs.VERSION }}
+      - name: Pack Core
+        run: dotnet pack --configuration Release --no-restore PictSharp.Core -o ./nupkgs /p:Version=${{ steps.semantic_version.outputs.VERSION }}
+      - name: Pack ImageSharpAdaptor
+        run: dotnet pack --configuration Release --no-restore PictSharp.ImageSharpAdaptor -o ./nupkgs /p:Version=${{ steps.semantic_version.outputs.VERSION }}
+      - name: Upload Compiled Binaries
+        uses: actions/upload-artifact@v2
+        with:
+          name: dotnetcore-bin
+          path: bin/
+      - name: Upload PictSharp.Core Package
+        uses: actions/upload-artifact@v2
+        with:
+          name: PictSharp.Core.nupkg
+          path: nupkgs/PictSharp.Core.*
+      - name: Upload PictSharp.ImageSharpAdaptor Package
+        uses: actions/upload-artifact@v2
+        with:
+          name: PictSharp.ImageSharpAdaptor.nupkg
+          path: nupkgs/PictSharp.ImageSharpAdaptor.*
+  windows-build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
+      - uses: paulhatch/semantic-version@v4.0.2
+        id: semantic_version
+        with:
+          tag_prefix: "v"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup .NET Core SDK 6.0
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: 6.0.x
+      - name: Restore NuGet Packages
+        run: nuget restore PictSharp.sln
+      - name: Build PictSharp.Drawing
+        run: msbuild .\PictSharp.Drawing\PictSharp.Drawing.csproj /p:Configuration=Release /p:OutputPath=..\bin
+      - name: Package
+        run: msbuild -t:pack /p:Configuration=Release /p:PackageOutputPath=..\nupkgs .\PictSharp.Drawing\PictSharp.Drawing.csproj /p:Version=${{ steps.semantic_version.outputs.VERSION }}
+      - name: Upload Compiled
+        uses: actions/upload-artifact@v2
+        with:
+          name: dotnet-4-7-2-bin
+          path: bin\*
+      - name: Upload Packages
+        uses: actions/upload-artifact@v2
+        with:
+          name: PictSharp.Drawing.nupkg
+          path: .\nupkgs\*
+  test:
+    needs: [core-build, windows-build]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
       - name: Setup .NET Core SDK 3.1
         uses: actions/setup-dotnet@v1.7.2
         with:
@@ -15,9 +93,49 @@ jobs:
           dotnet-version: 6.0.x
       - name: Install dependencies
         run: dotnet restore
-      - name: Build Core
-        run: dotnet build --configuration Release --no-restore PictSharp.Core
-      - name: Build ImageSharp
-        run: dotnet build --configuration Release --no-restore PictSharp.ImageSharpAdaptor
       - name: Test
-        run: dotnet test --no-restore --verbosity normal PictSharp.Tests
+        run: dotnet test PictSharp.Tests  --no-restore --logger GitHubActions
+  publish:
+    needs: [test]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Verify commit exists in origin/master
+      run: git branch --remote --contains | grep origin/master
+    - name: Set VERSION variable from tag
+      run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
+    - name: Download PictSharp.Core.nupkg
+      uses: actions/download-artifact@v2
+      with:
+        name: 'PictSharp.Core.nupkg'
+        path: ./nupkgs
+    - name: Download PictSharp.ImageSharpAdaptor.nupkg Package
+      uses: actions/download-artifact@v2
+      with:
+        name: 'PictSharp.ImageSharpAdaptor.nupkg'
+        path: ./nupkgs
+    - name: Download PictSharp.Drawing.nupkg
+      uses: actions/download-artifact@v2
+      with:
+        name: 'PictSharp.Drawing.nupkg'
+        path: ./nupkgs
+    - name: Setup .NET Core SDK 6.0
+      uses: actions/setup-dotnet@v1.7.2
+      with:
+        dotnet-version: 6.0.x
+    - name: Push to Github Repository
+      run: dotnet nuget push ./nupkgs/*.nupkg --source https://nuget.pkg.github.com/pgodwin/index.json --api-key ${GITHUB_TOKEN} --skip-duplicate
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Publish the package to nuget.org
+      run: dotnet nuget push ./nupkgs/*.nupkg -k $NUGET_AUTH_TOKEN -s https://api.nuget.org/v3/index.json --skip-duplicate
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.NUGET_TOKEN }}
+      
+    
+    

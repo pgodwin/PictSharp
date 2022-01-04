@@ -19,7 +19,7 @@ namespace PictSharp
         /// </summary>
         PackBits = 0,
         /// <summary>
-        /// This PackType indicates that the data was not packed at all (rowBytes < 8)
+        /// This PackType indicates that the data was not packed at all (rowBytes less than 8)
         /// </summary>
         NotPacked = 1,
 

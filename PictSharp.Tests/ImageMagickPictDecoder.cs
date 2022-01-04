@@ -22,6 +22,8 @@ namespace PictSharp.Tests
         private static void FromRgba32Bytes<TPixel>(Configuration configuration, Span<byte> rgbaBytes, IMemoryGroup<TPixel> destinationGroup)
             where TPixel : unmanaged, IPixel<TPixel>
         {
+            if (rgbaBytes == null)
+                throw new ArgumentNullException(nameof(rgbaBytes));
             Span<Rgba32> sourcePixels = MemoryMarshal.Cast<byte, Rgba32>(rgbaBytes);
             foreach (Memory<TPixel> m in destinationGroup)
             {
@@ -37,6 +39,8 @@ namespace PictSharp.Tests
         private static void FromRgba64Bytes<TPixel>(Configuration configuration, Span<byte> rgbaBytes, IMemoryGroup<TPixel> destinationGroup)
             where TPixel : unmanaged, IPixel<TPixel>
         {
+            if (rgbaBytes == null)
+                throw new ArgumentNullException(nameof(rgbaBytes));
             foreach (Memory<TPixel> m in destinationGroup)
             {
                 Span<TPixel> destBuffer = m.Span;
@@ -52,39 +56,38 @@ namespace PictSharp.Tests
         public Image<TPixel>ReadPict<TPixel>(Configuration configuration, string filename)
              where TPixel : unmanaged, SixLabors.ImageSharp.PixelFormats.IPixel<TPixel>
         {
-         
 
-            using (Magick.MagickImage magickImage = new Magick.MagickImage(filename))
+            using Magick.MagickImage magickImage = new Magick.MagickImage(filename);
+            var width = magickImage.Width;
+            var height = magickImage.Height;
+
+            var image = new Image<TPixel>(configuration, width, height);
+
+
+            var framePixels = image.GetPixelMemoryGroup();
+
+            using Magick.IUnsafePixelCollection<ushort> pixels = magickImage.GetPixelsUnsafe();
+
+            if (magickImage.Depth == 8 || magickImage.Depth == 6 || magickImage.Depth == 4 || magickImage.Depth == 2 || magickImage.Depth == 1 || magickImage.Depth == 10 || magickImage.Depth == 12)
             {
-                var width = magickImage.Width;
-                var height = magickImage.Height;
+                byte[]? data = pixels.ToByteArray(Magick.PixelMapping.RGBA);
 
-                var image = new Image<TPixel>(configuration, width, height);
-
-
-                var framePixels = image.GetPixelMemoryGroup();
-
-                using Magick.IUnsafePixelCollection<ushort> pixels = magickImage.GetPixelsUnsafe();
-                if (magickImage.Depth == 8 || magickImage.Depth == 6 || magickImage.Depth == 4 || magickImage.Depth == 2 || magickImage.Depth == 1 || magickImage.Depth == 10 || magickImage.Depth == 12)
-                {
-                    byte[] data = pixels.ToByteArray(Magick.PixelMapping.RGBA);
-
-                    FromRgba32Bytes(configuration, data, framePixels);
-
-                }
-                else if (magickImage.Depth == 16 || magickImage.Depth == 14)
-                {
-                    ushort[] data = pixels.ToShortArray(Magick.PixelMapping.RGBA);
-                    Span<byte> bytes = MemoryMarshal.Cast<ushort, byte>(data.AsSpan());
-                    FromRgba64Bytes(configuration, bytes, framePixels);
-                }
-                else
-                {
-                    throw new InvalidOperationException();
-                }
-                return image;
+                FromRgba32Bytes(configuration, data, framePixels);
 
             }
+            else if (magickImage.Depth == 16 || magickImage.Depth == 14)
+            {
+                ushort[]? data = pixels.ToShortArray(Magick.PixelMapping.RGBA);
+                Span<byte> bytes = MemoryMarshal.Cast<ushort, byte>(data.AsSpan());
+                FromRgba64Bytes(configuration, bytes, framePixels);
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
+
+            return image;
+
         }
 
         /// <summary>
@@ -118,14 +121,14 @@ namespace PictSharp.Tests
             using Magick.IUnsafePixelCollection<ushort> pixels = magickImage.GetPixelsUnsafe();
             if (magickImage.Depth == 8 || magickImage.Depth == 6 || magickImage.Depth == 4 || magickImage.Depth == 2 || magickImage.Depth == 1 || magickImage.Depth == 10 || magickImage.Depth == 12)
             {
-                byte[] data = pixels.ToByteArray(Magick.PixelMapping.RGBA);
+                byte[]? data = pixels.ToByteArray(Magick.PixelMapping.RGBA);
 
                 FromRgba32Bytes(configuration, data, framePixels);
 
             }
             else if (magickImage.Depth == 16 || magickImage.Depth == 14)
             {
-                ushort[] data = pixels.ToShortArray(Magick.PixelMapping.RGBA);
+                ushort[]? data = pixels.ToShortArray(Magick.PixelMapping.RGBA);
                 Span<byte> bytes = MemoryMarshal.Cast<ushort, byte>(data.AsSpan());
                 FromRgba64Bytes(configuration, bytes, framePixels);
             }

@@ -45,11 +45,13 @@ namespace Test
                 {
 
                     var outName = "Lenna" + bpp.ToString() + "_imageSharp.pict";
-                    var encoder = new PictEncoder();
-                    //if ((int)bpp < (int)PictBpp.Bit16)
-                    //    encoder.IsIndexed = true;
+                    var encoder = new PictEncoder
+                    {
+                        //if ((int)bpp < (int)PictBpp.Bit16)
+                        //    encoder.IsIndexed = true;
 
-                    encoder.PictBpp = bpp;
+                        PictBpp = bpp
+                    };
                     image.SaveAsPict(outName, encoder);
                 }
             }

@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("PictCode.Drawing")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Provides extensions to System.Drawing to allow for saving bitmaps to Apple's Legacy PICT Format.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("pgodwin")]
 [assembly: AssemblyProduct("PictCode.Drawing")]
-[assembly: AssemblyCopyright("Copyright © 2021 MIT")]
+[assembly: AssemblyCopyright("Copyright © 2021 Peter Godwin")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

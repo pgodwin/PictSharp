@@ -13,7 +13,9 @@ namespace PictSharp.ImageSharpAdaptor
     public class PictEncoder : IImageEncoder, IPictEncodingOptions
     {
         /// <inheritdoc/>
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public IQuantizer Quantizer { get; set; }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
         /// <inheritdoc/>
         public PictBpp PictBpp { get; set; }
@@ -23,10 +25,8 @@ namespace PictSharp.ImageSharpAdaptor
         /// <inheritdoc/>
         public void Encode<TPixel>(Image<TPixel> image, Stream stream) where TPixel : unmanaged, IPixel<TPixel>
         {
-            using (var encoder = new PictEncoderCore(image.GetConfiguration().MemoryAllocator, image.GetConfiguration(), new PictEncodingOptions(this)))
-            {
-                encoder.Encode(image, stream);
-            }
+            using var encoder = new PictEncoderCore(image.GetConfiguration().MemoryAllocator, image.GetConfiguration(), new PictEncodingOptions(this));
+            encoder.Encode(image, stream);
         }
 
         /// <inheritdoc/>
@@ -35,10 +35,8 @@ namespace PictSharp.ImageSharpAdaptor
             // The introduction of a local variable that refers to an object the implements
             // IDisposable means you must use async/await, where the compiler generates the
             // state machine and a continuation.
-            using (var encoder = new PictEncoderCore(image.GetConfiguration().MemoryAllocator, image.GetConfiguration(), new PictEncodingOptions(this)))
-            {
-                await encoder.EncodeAsync(image, stream, cancellationToken).ConfigureAwait(false);
-            }
+            using var encoder = new PictEncoderCore(image.GetConfiguration().MemoryAllocator, image.GetConfiguration(), new PictEncodingOptions(this));
+            await encoder.EncodeAsync(image, stream, cancellationToken).ConfigureAwait(false);
         }
     }
 }

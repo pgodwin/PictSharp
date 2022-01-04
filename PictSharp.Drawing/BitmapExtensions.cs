@@ -106,11 +106,7 @@ namespace PictSharp.Drawing
         }
 
 
-        /// <summary>
-        /// Saves the Bitmap as a PICT image
-        /// </summary>
-        /// <param name="bitmap">Source bitmap</param>
-        /// <param name="output">Output stream to write to</param>
+        /// <inheritdoc/>
         public static void SaveAsPict(this Bitmap bitmap, Stream output)
         {
             var image = bitmap.ToImageDetails();
