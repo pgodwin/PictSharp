@@ -1,5 +1,4 @@
-PictSharp
-=========
+# PictSharp
 
 [![build](https://github.com/pgodwin/PictSharp/actions/workflows/dotnet-build.yml/badge.svg)](https://github.com/pgodwin/PictSharp/actions/workflows/dotnet-build.yml)
 ![Nuget Core](https://img.shields.io/nuget/v/PictSharp.Core?label=nuget%20core)
@@ -8,24 +7,24 @@ PictSharp
 
 PictSharp is a .NET library for converting images to Apple's [PICT Format](https://en.wikipedia.org/wiki/PICT). 
 
-It's based on PICT encoder from TwelveMonkeys by Harald Kuhr. 
-8-bit support is based on studying the ImageMagick and Apple Quickdraw documentation. 
+Loosely based on the [PICT encoder from TwelveMonkeys](https://github.com/haraldk/TwelveMonkeys/blob/master/imageio/imageio-pict/src/main/java/com/twelvemonkeys/imageio/plugins/pict/PICTImageWriter.java) by Harald Kuhr. 
 
-The PackBits encoding is ported from the Apache Commons Image Library Java implementation.
+1-bpp-8-bpp support is based on studying the ImageMagick and Apple Quickdraw documentation. 
 
-Implemented today is support for:
+The PackBits compression is from the [C# TiffLibrary]([TiffLibrary](https://github.com/yigolden/TiffLibrary)) by yigolden.
+
+## Supported Types:
  - 32-bit (4-channel) PackBits compressed
  - Indexed 1, 2, 4 and 8bpp Images (Packbits)
 
 All are PICT 2.0 format (basically MacII onwards).
 
-What's not supported?
-=====================
- - 16 and 24-bit images aren't working
+## What's not supported?
+
+ - 16-bit images aren't working
  - Decoding any PICT images
 
-Quick Start
-============
+## Quick Start
 
 To use with ImageSharp, install the Package
 
@@ -46,17 +45,21 @@ module.Configure(SixLabors.ImageSharp.Configuration.Default);
 using (var image = SixLabors.ImageSharp.Image.Load<Rgba32>("Lenna32.png"))
 {
    // Save to PICT
-   image.SaveAsPict(outName);
+   image.SaveAsPict("Lenna32.pict");
 }
 
+```
+
+You can control the bit depth of the images by setting the encoder
+```csharp
+var encoder = new PictEncoder();
+encoder.PictBpp = PictBpp.Bit8;
+image.SaveAsPict("Lenna8bpp.pict", encoder);
 ```
 
 ## License
 MIT License
 
-
-
-Questions / Support
-===================
+## Questions / Support
 As always, supplied as-is without any warranties. If you find an issue, please raise it via Github. PRs welcomed.
 
