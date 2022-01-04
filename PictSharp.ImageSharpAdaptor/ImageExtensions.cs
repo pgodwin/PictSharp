@@ -33,12 +33,10 @@ namespace PictSharp.ImageSharpAdaptor
             Func<int, byte[]> getScanline = new Func<int, byte[]>(y => { 
                 var pixels = image.GetPixelRowSpan(y);
                 var pixelBytes = 4;
-                using (IMemoryOwner<byte> row = memoryAllocator.Allocate<byte>(pixelBytes * image.Width))
-                {
-                    Span<byte> rowSpan = row.Memory.Span;
-                    PixelOperations<TPixel>.Instance.ToBgra32Bytes(configuration, pixels, rowSpan, pixels.Length);
-                    return rowSpan.ToArray();
-                }
+                using IMemoryOwner<byte> row = memoryAllocator.Allocate<byte>(pixelBytes * image.Width);
+                Span<byte> rowSpan = row.Memory.Span;
+                PixelOperations<TPixel>.Instance.ToBgra32Bytes(configuration, pixels, rowSpan, pixels.Length);
+                return rowSpan.ToArray();
 
             });
         
@@ -55,7 +53,7 @@ namespace PictSharp.ImageSharpAdaptor
 
         public static void SaveAsPict(this Image source, string path) => SaveAsPict(source, path, null);
 
-        public static void SaveAsPict(this Image source, string path, PictEncoder encoder)
+        public static void SaveAsPict(this Image source, string path, PictEncoder? encoder)
         {
             source.Save(
                 path,
@@ -63,7 +61,7 @@ namespace PictSharp.ImageSharpAdaptor
         }
 
         public static void SaveAsPict(this Image source, Stream stream) => SaveAsPict(source, stream, null);
-        public static void SaveAsPict(this Image source, Stream stream, PictEncoder encoder)
+        public static void SaveAsPict(this Image source, Stream stream, PictEncoder? encoder)
         {
             source.Save(
                 stream, 

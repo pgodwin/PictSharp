@@ -27,11 +27,7 @@ namespace PictSharp.ImageSharpAdaptor
 
         private readonly PictEncodingOptions options;
 
-        /// <summary>
-        /// The raw data of current scanline.
-        /// </summary>
-        private IMemoryOwner<byte> currentScanline;
-
+    
         private int width;
         private int height;
 
@@ -52,8 +48,7 @@ namespace PictSharp.ImageSharpAdaptor
         /// <inheritdoc />
         public void Dispose()
         {
-            this.currentScanline?.Dispose();
-            this.currentScanline = null;
+
         }
 
 
@@ -69,16 +64,18 @@ namespace PictSharp.ImageSharpAdaptor
         {
 
             ImageMetadata metadata = image.Metadata;
-            IndexedImageFrame<TPixel> quantized = default;
-            PictSharp.PaletteEntry[] palette = default;
-            ImageDetails imageDetails = default;
+            IndexedImageFrame<TPixel>? quantized = default; 
+            PictSharp.PaletteEntry[] palette;
+            ImageDetails imageDetails;
             
 
             this.width = image.Width;
             this.height = image.Height;
 
 
-            Func<int, byte[]> getScanLine = new Func<int, byte[]>(y => this.GetScanLine<TPixel>(image, quantized, y).ToArray() );
+#pragma warning disable CS8604 // Possible null reference argument.
+            Func<int, byte[]> getScanLine = new Func<int, byte[]>(y => this.GetScanLine(image, quantized, y).ToArray() );
+#pragma warning restore CS8604 // Possible null reference argument.
 
 
             if (options.IsIndexed)
@@ -153,21 +150,19 @@ namespace PictSharp.ImageSharpAdaptor
             
             var pixels = image.GetPixelRowSpan(y);
             var pixelBytes = (int)options.PictBpp / 8;
-            using (IMemoryOwner<byte> row = memoryAllocator.Allocate<byte>(pixelBytes * image.Width))
+            using IMemoryOwner<byte> row = memoryAllocator.Allocate<byte>(pixelBytes * image.Width);
+            Span<byte> rowSpan = row.Memory.Span;
+            switch (options.PictBpp)
             {
-                Span<byte> rowSpan = row.Memory.Span;
-                switch (options.PictBpp)
-                {
-                    case PictBpp.Bit16:
-                        PixelOperations<TPixel>.Instance.ToBgra5551Bytes(configuration, pixels, rowSpan, pixels.Length);
-                        break;
-                    case PictBpp.Bit32:
-                    default:
-                        PixelOperations<TPixel>.Instance.ToBgra32Bytes(configuration, pixels, rowSpan, pixels.Length);
-                        break;
-                }
-                return rowSpan;
+                case PictBpp.Bit16:
+                    PixelOperations<TPixel>.Instance.ToBgra5551Bytes(configuration, pixels, rowSpan, pixels.Length);
+                    break;
+                case PictBpp.Bit32:
+                default:
+                    PixelOperations<TPixel>.Instance.ToBgra32Bytes(configuration, pixels, rowSpan, pixels.Length);
+                    break;
             }
+            return rowSpan;
         }
 
         /// <summary>
@@ -190,40 +185,13 @@ namespace PictSharp.ImageSharpAdaptor
             }
 
             // Create quantized frame returning the palette and set the bit depth.
-            using (IQuantizer<TPixel> frameQuantizer = options.Quantizer.CreatePixelSpecificQuantizer<TPixel>(image.GetConfiguration()))
-            {
-                ImageFrame<TPixel> frame = image.Frames.RootFrame;
-                return frameQuantizer.BuildPaletteAndQuantizeFrame(frame, frame.Bounds());
-            }
+            using IQuantizer<TPixel> frameQuantizer = options.Quantizer.CreatePixelSpecificQuantizer<TPixel>(image.GetConfiguration());
+            ImageFrame<TPixel> frame = image.Frames.RootFrame;
+            return frameQuantizer.BuildPaletteAndQuantizeFrame(frame, frame.Bounds());
 
         }
 
 
-        /// <summary>
-        /// Returns a suggested <see cref="PngBitDepth"/> for the given <typeparamref name="TPixel"/>
-        /// This is not exhaustive but covers many common pixel formats.
-        /// </summary>
-        private static PictBpp SuggestBitDepth<TPixel>()
-            where TPixel : unmanaged, IPixel<TPixel>
-        {
-            return typeof(TPixel) switch
-            {
-                Type t when t == typeof(A8) => PictBpp.Bit8,
-                Type t when t == typeof(Argb32) => PictBpp.Bit32,
-                Type t when t == typeof(Bgr24) => PictBpp.Bit32,
-                Type t when t == typeof(Bgra32) => PictBpp.Bit32,
-                Type t when t == typeof(L8) => PictBpp.Bit8,
-                Type t when t == typeof(L16) => PictBpp.Bit16,
-                Type t when t == typeof(La16) => PictBpp.Bit32,
-                Type t when t == typeof(La32) => PictBpp.Bit32,
-                Type t when t == typeof(Rgb24) => PictBpp.Bit32,
-                Type t when t == typeof(Rgba32) => PictBpp.Bit32,
-                Type t when t == typeof(Rgb48) => PictBpp.Bit32,
-                Type t when t == typeof(Rgba64) => PictBpp.Bit32,
-                Type t when t == typeof(RgbaVector) => PictBpp.Bit32,
-                _ => PictBpp.Bit32
-            };
-        }
 
 
         #region Internal Methods to use

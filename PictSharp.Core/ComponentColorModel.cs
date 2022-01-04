@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace PictSharp
 {
+    /// <summary>
+    /// For the eventual colour model support
+    /// </summary>
     public class ComponentColorModel : ColorModel
     {
     }

@@ -51,8 +51,10 @@ namespace PictSharp
     {
 
 
-
+        /// <inheritdoc/>
         public void Encode(Stream output, ImageDetails image) => this.Encode(output, image, CancellationToken.None);
+        
+        /// <inheritdoc/>
         public void Encode(Stream output, ImageDetails image, CancellationToken cancellationToken)
         {
             using (var stream = new BeBinaryWriter(output, Encoding.Default, true))
@@ -502,7 +504,7 @@ namespace PictSharp
                     else //(imageDetails.BitsPerPixel == 24)
                         color = new PaletteEntry(255, pixels[colorIndex + 2], pixels[colorIndex + 1], pixels[colorIndex + 0]);
                  
-                    /// Write out as rows of pixels, 1 per channel
+                    // Write out as rows of pixels, 1 per channel
                     scanlineBytes[xOffset + x]          = color.A;
                     scanlineBytes[xOffset + w + x]      = color.R;
                     scanlineBytes[xOffset + 2 * w + x]  = color.G;
