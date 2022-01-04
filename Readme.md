@@ -1,8 +1,8 @@
 # PictSharp
 
-[![build](https://github.com/pgodwin/PictSharp/actions/workflows/dotnet-build.yml/badge.svg)](https://github.com/pgodwin/PictSharp/actions/workflows/dotnet-build.yml)
-![Nuget Core](https://img.shields.io/nuget/v/PictSharp.Core?label=nuget%20core)
-![Nuget](https://img.shields.io/nuget/v/PictSharp.ImageSharpAdaptor?label=nuget%20ImageSharpAdaptor)
+[![build](https://github.com/pgodwin/PictSharp/actions/workflows/build.yml/badge.svg)](https://github.com/pgodwin/PictSharp/actions/workflows/build.yml)
+![Nuget Core](https://img.shields.io/nuget/v/PictSharp.Core?label=PictSharp.Core)
+![Nuget](https://img.shields.io/nuget/v/PictSharp.ImageSharpAdaptor?label=PictSharp.ImageSharpAdaptor)
 
 
 PictSharp is a .NET library for converting images to Apple's [PICT Format](https://en.wikipedia.org/wiki/PICT). 
