@@ -30,7 +30,7 @@ jobs:
     - name: Build ImageSharpAdaptor
       run: dotnet build --configuration Release --no-restore PictSharp.ImageSharpAdaptor
     - name: Test
-      run: dotnet test --configuration Release /p:Version=${VERSION} --no-build --no-restore --verbosity normal
+      run: dotnet test PictSharp.Tests --configuration Release /p:Version=${VERSION} --no-restore --verbosity normal
     - name: Package PictSharp.Core
       run: dotnet pack --configuration Release PictSharp.Core /p:Version=${VERSION} --no-build
     - name: Package PictSharp.ImageSharpAdaptor
