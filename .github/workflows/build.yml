@@ -1,7 +1,7 @@
 name: build
 on: [push, pull_request]
 jobs:
-  build:
+  core-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -16,12 +16,36 @@ jobs:
       - name: Install dependencies
         run: dotnet restore
       - name: Build Core
-        run: dotnet build --configuration Release --no-restore PictSharp.Core
+        run: dotnet build --configuration Release --no-restore PictSharp.Core -o ./bin
       - name: Build ImageSharp
-        run: dotnet build --configuration Release --no-restore PictSharp.ImageSharpAdaptor
+        run: dotnet build --configuration Release --no-restore PictSharp.ImageSharpAdaptor -o ./bin
       - name: Test
-        run: dotnet test --no-restore --verbosity normal PictSharp.Tests /p:BuildNetCoreOnly=true
-  framework-build:
+        run: dotnet test --no-restore --verbosity normal PictSharp.Tests /p:BuildNetCoreOnly=true -r ./test-results
+      - name: Pack Core
+        run: dotnet pack --no-restore PictSharp.Core -o ./packages
+      - name: Pack ImageSharpAdaptor
+        run: dotnet pack --no-restore PictSharp.ImageSharpAdaptor -o ./packages
+      - name: Upload Compiled Binaries
+        uses: actions/upload-artifact@v1.0.0
+        with:
+          name: dotnetcore-bin
+          path: bin/*
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v1.0.0
+        with:
+          name: dotnetcore-test-results
+          path: ./test-results/*
+      - name: Upload PictSharp.Core Package
+        uses: actions/upload-artifact@v1.0.0
+        with:
+          name: PictSharp-Core
+          path: ./packages/PictSharp.Core.*
+      - name: Upload PictSharp.ImageSharpAdaptor Package
+        uses: actions/upload-artifact@v1.0.0
+        with:
+          name: PictSharp-ImageSharpAdaptor
+          path: ./packages/PictSharp.ImageSharpAdaptor.*
+  windows-build:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
@@ -40,9 +64,55 @@ jobs:
       - name: Build PictSharp.Drawing
         run: msbuild .\PictSharp.Drawing\PictSharp.Drawing.csproj /p:Configuration=Release 
       - name: Package
-        run: msbuild -t:pack /p:Configuration=Release .\PictSharp.Drawing\PictSharp.Drawing.csproj
-      - name: Upload Artifact
+        run: msbuild -t:pack /p:Configuration=Release /p:PackageOutputPath=.\packages .\PictSharp.Drawing\PictSharp.Drawing.csproj
+      - name: Upload Compiled
         uses: actions/upload-artifact@v1.0.0
         with:
-          name: dotnet-4-7-1
-          path: bin\Release
+          name: dotnet-4-7-1-bin
+          path: bin\*
+      - name: Upload Packages
+        uses: actions/upload-artifact@v1.0.0
+        with:
+          name: PictSharp-Drawing
+          path: .\packages\*
+  publish:
+    needs: [core-build, windows-build]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Verify commit exists in origin/master
+      run: git branch --remote --contains | grep origin/master
+    - name: Set VERSION variable from tag
+      run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
+    - name: Download PictSharp Core Package
+      uses: actions/download-artifact@v2
+      with:
+        name: PictSharp-Core
+    - name: Download PictSharp ImageSharpAdaptor Package
+      uses: actions/download-artifact@v2
+      with:
+        name: PictSharp-ImageSharpAdaptor
+    - name: Download Drawing Package
+      uses: actions/download-artifact@v2
+      with:
+        name: PictSharp-Drawing
+    - name: Setup .NET Core SDK 6.0
+      uses: actions/setup-dotnet@v1.7.2
+      with:
+        dotnet-version: 6.0.x
+    - name: Push to Github Repository
+      run: dotnet nuget push */bin/Release/*.nupkg --source https://nuget.pkg.github.com/pgodwin/index.json --api-key ${GITHUB_TOKEN}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Publish the package to nuget.org
+      run: dotnet nuget push */bin/Release/*.nupkg -k $NUGET_AUTH_TOKEN -s https://api.nuget.org/v3/index.json
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.NUGET_TOKEN }}
+      
+    
+    
