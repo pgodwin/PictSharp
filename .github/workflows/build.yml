@@ -25,6 +25,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
       - name: Restore NuGet Packages
         run: nuget restore PictSharp.sln
       - name: Build PictSharp.Drawing
