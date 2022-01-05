@@ -24,17 +24,17 @@ jobs:
       - name: Pack ImageSharpAdaptor
         run: dotnet pack --configuration Release --no-restore PictSharp.ImageSharpAdaptor -o ./packages
       - name: Upload Compiled Binaries
-        uses: actions/upload-artifact@v1.0.0
+        uses: actions/upload-artifact@v2
         with:
           name: dotnetcore-bin
           path: bin/
       - name: Upload PictSharp.Core Package
-        uses: actions/upload-artifact@v1.0.0
+        uses: actions/upload-artifact@v2
         with:
           name: PictSharp-Core
           path: packages/PictSharp.Core.*
       - name: Upload PictSharp.ImageSharpAdaptor Package
-        uses: actions/upload-artifact@v1.0.0
+        uses: actions/upload-artifact@v2
         with:
           name: PictSharp-ImageSharpAdaptor
           path: packages/PictSharp.ImageSharpAdaptor.*
@@ -48,10 +48,6 @@ jobs:
         uses: actions/setup-dotnet@v1.7.2
         with:
           dotnet-version: 3.1.x
-      - name: Setup .NET Core SDK 6.0
-        uses: actions/setup-dotnet@v1.7.2
-        with:
-          dotnet-version: 6.0.x
       - name: Restore NuGet Packages
         run: nuget restore PictSharp.sln
       - name: Build PictSharp.Drawing
