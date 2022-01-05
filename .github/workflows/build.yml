@@ -20,7 +20,7 @@ jobs:
       - name: Build ImageSharp
         run: dotnet build --configuration Release --no-restore PictSharp.ImageSharpAdaptor -o ./bin
       - name: Test
-        run: dotnet test --no-restore --verbosity normal PictSharp.Tests /p:BuildNetCoreOnly=true -r ./test-results
+        run: dotnet test --no-restore --verbosity normal PictSharp.Tests /p:BuildNetCoreOnly=true --logger GitHubActions
       - name: Pack Core
         run: dotnet pack --no-restore PictSharp.Core -o ./packages
       - name: Pack ImageSharpAdaptor
@@ -29,22 +29,17 @@ jobs:
         uses: actions/upload-artifact@v1.0.0
         with:
           name: dotnetcore-bin
-          path: bin/*
-      - name: Upload Test Results
-        uses: actions/upload-artifact@v1.0.0
-        with:
-          name: dotnetcore-test-results
-          path: ./test-results/*
+          path: bin/
       - name: Upload PictSharp.Core Package
         uses: actions/upload-artifact@v1.0.0
         with:
           name: PictSharp-Core
-          path: ./packages/PictSharp.Core.*
+          path: packages/PictSharp.Core.*
       - name: Upload PictSharp.ImageSharpAdaptor Package
         uses: actions/upload-artifact@v1.0.0
         with:
           name: PictSharp-ImageSharpAdaptor
-          path: ./packages/PictSharp.ImageSharpAdaptor.*
+          path: packages/PictSharp.ImageSharpAdaptor.*
   windows-build:
     runs-on: windows-latest
     steps:
@@ -62,13 +57,13 @@ jobs:
       - name: Restore NuGet Packages
         run: nuget restore PictSharp.sln
       - name: Build PictSharp.Drawing
-        run: msbuild .\PictSharp.Drawing\PictSharp.Drawing.csproj /p:Configuration=Release 
+        run: msbuild .\PictSharp.Drawing\PictSharp.Drawing.csproj /p:Configuration=Release /p:OutputPath=..\bin
       - name: Package
-        run: msbuild -t:pack /p:Configuration=Release /p:PackageOutputPath=.\packages .\PictSharp.Drawing\PictSharp.Drawing.csproj
+        run: msbuild -t:pack /p:Configuration=Release /p:PackageOutputPath=..\packages .\PictSharp.Drawing\PictSharp.Drawing.csproj
       - name: Upload Compiled
         uses: actions/upload-artifact@v1.0.0
         with:
-          name: dotnet-4-7-1-bin
+          name: dotnet-4-7-2-bin
           path: bin\*
       - name: Upload Packages
         uses: actions/upload-artifact@v1.0.0
