@@ -30,7 +30,7 @@ jobs:
       - name: Restore NuGet Packages
         run: nuget restore PictSharp.sln
       - name: Build PictSharp.Drawing
-        run: msbuild .\PictSharp.Drawing.csproj /p:Configuration=Release 
+        run: msbuild .\PictSharp.Drawing\PictSharp.Drawing.csproj /p:Configuration=Release 
       - name: Package
         run: msbuild -t:pack /p:Configuration=Release .\PictSharp.Drawing\PictSharp.Drawing.csproj
       - name: Upload Artifact
