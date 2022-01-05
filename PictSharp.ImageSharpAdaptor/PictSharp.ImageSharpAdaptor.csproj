@@ -6,13 +6,14 @@
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-    <Description>PictSharp is a native .NET Library for converting images to Apple's PICT format. 
-This package provides an adaptor for ImageSharp to support saving ImageSharp images to PICT format.</Description>
+    <Description>PictSharp is a native .NET Library for converting images to Apple's PICT format. This package provides an adaptor for ImageSharp to support saving ImageSharp images to PICT format.</Description>
     <Authors>pgodwin</Authors>
     <RepositoryUrl>https://github.com/pgodwin/PictSharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>pictsharp;pict;encoding;compression;imagesharp</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>pictsharp.png</PackageIcon>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,5 +23,11 @@ This package provides an adaptor for ImageSharp to support saving ImageSharp ima
   <ItemGroup>
     <ProjectReference Include="..\PictSharp.Core\PictSharp.Core.csproj" />
   </ItemGroup>
+
+    <ItemGroup>
+    <None Include="..\pictsharp.png" Pack="true" PackagePath="\"/>
+    <None Include="..\readme.md" Pack="true" PackagePath="\"/>
+  </ItemGroup>
+
 
 </Project>

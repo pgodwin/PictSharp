@@ -12,11 +12,17 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <PackageIcon>pictsharp.png</PackageIcon>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
   </PropertyGroup>
 
   
   <ItemGroup>
     <PackageReference Include="Be.IO-multi" Version="1.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\pictsharp.png" Pack="true" PackagePath="\"/>
+    <None Include="..\readme.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
 </Project>
