@@ -1,8 +1,9 @@
 # PictSharp
 
 [![build](https://github.com/pgodwin/PictSharp/actions/workflows/build.yml/badge.svg)](https://github.com/pgodwin/PictSharp/actions/workflows/build.yml)
-![Nuget Core](https://img.shields.io/nuget/v/PictSharp.Core?label=PictSharp.Core)
-![Nuget](https://img.shields.io/nuget/v/PictSharp.ImageSharpAdaptor?label=PictSharp.ImageSharpAdaptor)
+![Nuget Core()](https://img.shields.io/nuget/v/PictSharp.Core?label=PictSharp.Core)
+![Nuget ImageSharpAdaptor](https://img.shields.io/nuget/v/PictSharp.ImageSharpAdaptor?label=PictSharp.ImageSharpAdaptor)
+![Nuget System.Drawing](https://img.shields.io/nuget/v/PictSharp.Drawing?label=PictSharp.Drawing)
 
 
 PictSharp is a .NET library for converting images to Apple's [PICT Format](https://en.wikipedia.org/wiki/PICT). 
@@ -57,6 +58,22 @@ encoder.PictBpp = PictBpp.Bit8;
 image.SaveAsPict("Lenna8bpp.pict", encoder);
 ```
 
+### System.Drawing.Bitmap support
+For .NET Framework 4.7.2 there is support for System.Drawing.Bitmap under Windows.
+
+```bash
+Install-Package PictSharp.Drawing
+```
+
+```csharp
+using PictSharp.Drawing;
+...
+
+var image = new System.Drawing.Bitmap("source.png"); ;
+
+using (var output = new FileStream("output.pict", FileMode.CreateNew))
+   image.SaveAsPict(output);
+```
 ## License
 MIT License
 
