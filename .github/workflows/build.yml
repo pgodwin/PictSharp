@@ -5,10 +5,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Setup .NET Core SDK 3.1
-        uses: actions/setup-dotnet@v1.7.2
-        with:
-          dotnet-version: 3.1.x
       - name: Setup .NET Core SDK 6.0
         uses: actions/setup-dotnet@v1.7.2
         with:
@@ -31,12 +27,12 @@ jobs:
       - name: Upload PictSharp.Core Package
         uses: actions/upload-artifact@v2
         with:
-          name: PictSharp-Core
+          name: PictSharp.Core.nupkg
           path: packages/PictSharp.Core.*
       - name: Upload PictSharp.ImageSharpAdaptor Package
         uses: actions/upload-artifact@v2
         with:
-          name: PictSharp-ImageSharpAdaptor
+          name: PictSharp.ImageSharpAdaptor.nupkg
           path: packages/PictSharp.ImageSharpAdaptor.*
   windows-build:
     runs-on: windows-latest
@@ -44,10 +40,10 @@ jobs:
       - uses: actions/checkout@v2
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.1
-      - name: Setup .NET Core SDK 3.1
+      - name: Setup .NET Core SDK 6.0
         uses: actions/setup-dotnet@v1.7.2
         with:
-          dotnet-version: 3.1.x
+          dotnet-version: 6.0.x
       - name: Restore NuGet Packages
         run: nuget restore PictSharp.sln
       - name: Build PictSharp.Drawing
@@ -62,7 +58,7 @@ jobs:
       - name: Upload Packages
         uses: actions/upload-artifact@v2
         with:
-          name: PictSharp-Drawing
+          name: PictSharp.Drawing.nupkg
           path: .\packages\*
   test:
     needs: [core-build, windows-build]
