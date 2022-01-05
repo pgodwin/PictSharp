@@ -20,9 +20,9 @@ jobs:
       - name: Build ImageSharp
         run: dotnet build --configuration Release --no-restore PictSharp.ImageSharpAdaptor -o ./bin
       - name: Pack Core
-        run: dotnet pack --no-restore PictSharp.Core -o ./packages
+        run: dotnet pack --configuration Release --no-restore PictSharp.Core -o ./packages
       - name: Pack ImageSharpAdaptor
-        run: dotnet pack --no-restore PictSharp.ImageSharpAdaptor -o ./packages
+        run: dotnet pack --configuration Release --no-restore PictSharp.ImageSharpAdaptor -o ./packages
       - name: Upload Compiled Binaries
         uses: actions/upload-artifact@v1.0.0
         with:

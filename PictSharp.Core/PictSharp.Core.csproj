@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>PictSharp</RootNamespace>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <Authors>pgodwin</Authors>
     <Description>Provides generic, core Apple PICT V2 Encoding for 1bpp, 2bpp, 4bpp, 8bpp and 32bpp images.</Description>
     <RepositoryUrl>https://github.com/pgodwin/PictSharp</RepositoryUrl>

@@ -5,7 +5,7 @@
     <!-- I think this is unsupported...-->
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <Description>PictSharp is a native .NET Library for converting images to Apple's PICT format. 
 This package provides an adaptor for ImageSharp to support saving ImageSharp images to PICT format.</Description>
     <Authors>pgodwin</Authors>
